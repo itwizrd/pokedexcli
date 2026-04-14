@@ -18,8 +18,8 @@ func repl() {
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
+
 		input := cleanInput(scanner.Text())
-		//fmt.Println("Your input was:",input[0])
 		if len(input) == 0 {
 			continue
 		}

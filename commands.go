@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"net/http"
 	"io"
@@ -12,12 +14,16 @@ type cliCommand struct {
 	name		string
 	description	string
 	callback	func() error
-	config:		struct
+	config
 }
+
 type config struct {
-	Next:		"next": "https://pokeapi.co/api/v2/location-area?limit=20&offset=20", //offset=x, if next offset+=20 if prev offset-=20
-	Previous:	"previous": null,
+	URL		string
+	action	string
 }
+
+//"next":"https://pokeapi.co/api/v2/location-area?limit=20&offset=20", //offset=x, if next offset+=20 if prev offset-=20
+// "previous":null
 
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
@@ -25,26 +31,30 @@ func getCommands() map[string]cliCommand {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
-			config:		 null,
 		},
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
 			callback:    commandHelp,
-			config:		 null,
 		},
 		"map": {
 			name:        "map",
 			description: "Displays 20 map locations",
-			callback:    map,
-			config:		 Next,
+			callback:    pokemap,
+			config:		 config{
+				"https://pokeapi.co/api/v2/location-area?limit=20&offset=20",
+				"Next",
+			},
 		},
 		"mapb": {
 			name:		 "mapb",
 			description: "Displays prev 20 map locations",
 			callback:	 mapb,
-			config:		 Previous,
-		}
+			config:		 config{
+				"https://pokeapi.co/api/v2/location-area?limit=20&offset=20",
+				"Previous",
+			},
+		},
 	}
 }
 
@@ -55,20 +65,19 @@ func commandExit() error {
 }
 
 func commandHelp() error {
-	fmt.Print("Welcome to the Pokedex!\nUsage:\n\n")
-	command := getCommands()
-	for _, c := range command {
+	fmt.Print("\nWelcome to the Pokedex!\nUsage:\n\n")
+	for _, c := range getCommands() {
 		fmt.Printf("%s: %s\n",c.name,c.description)
 	}
 	return nil
 }
 
 type Location struct {
-	name:	string
-	URL:	string
+	name	string
+	URL		string
 }
 
-func map() error {
+func pokemap() error {
 	res, err := http.Get("https://pokeapi.co/api/v2/location-area?offset=0&limit=20")
 	if err != nil {
 		log.Fatal(err)
@@ -81,8 +90,13 @@ func map() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var loccations []Location
+	var locations []Location
 
-	err := json.Unmarshal(body, &locations)
+	err = json.Unmarshal(body, &locations)
 	fmt.Printf("%s", body)
+	return nil
+}
+
+func mapb() error {
+	return nil
 }
