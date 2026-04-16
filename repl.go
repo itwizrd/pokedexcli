@@ -11,6 +11,7 @@ func cleanInput(text string) []string {
 	return strings.Fields(strings.ToLower(text))
 }
 func repl() {
+	cfg := &config{}
 	scanner := bufio.NewScanner(os.Stdin)
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
@@ -25,7 +26,7 @@ func repl() {
 		}
 		c, exists := getCommands()[input[0]]
 		if exists {
-			err := c.callback()
+			err := c.callback(cfg)
 			if err != nil {
 				fmt.Println(err)
 			}

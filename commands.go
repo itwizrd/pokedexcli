@@ -13,13 +13,12 @@ import (
 type cliCommand struct {
 	name		string
 	description	string
-	callback	func() error
-	config
+	callback	func(*config) error
 }
 
 type config struct {
-	URL		string
-	action	string
+	Next		*string
+	Previous	*string
 }
 
 //"next":"https://pokeapi.co/api/v2/location-area?limit=20&offset=20", //offset=x, if next offset+=20 if prev offset-=20
@@ -41,44 +40,46 @@ func getCommands() map[string]cliCommand {
 			name:        "map",
 			description: "Displays 20 map locations",
 			callback:    pokemap,
-			config:		 config{
-				"https://pokeapi.co/api/v2/location-area?limit=20&offset=20",
-				"Next",
-			},
 		},
 		"mapb": {
 			name:		 "mapb",
 			description: "Displays prev 20 map locations",
 			callback:	 mapb,
-			config:		 config{
-				"https://pokeapi.co/api/v2/location-area?limit=20&offset=20",
-				"Previous",
-			},
 		},
 	}
 }
 
-func commandExit() error {
+func commandExit(cfg *config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp() error {
+func commandHelp(cfg *config) error {
 	fmt.Print("\nWelcome to the Pokedex!\nUsage:\n\n")
 	for _, c := range getCommands() {
 		fmt.Printf("%s: %s\n",c.name,c.description)
 	}
+	fmt.Printf("\n")
 	return nil
 }
 
-type Location struct {
-	name	string
-	URL		string
+type Locations struct {
+	Count    int		`json:"count"`
+	Next     *string	`json:"next"`
+	Previous *string	`json:"previous"`
+	Results  []struct {
+		Name string `json:"name"`
+		URL  string `json:"url"`
+	} `json:"results"`
 }
 
-func pokemap() error {
-	res, err := http.Get("https://pokeapi.co/api/v2/location-area?offset=0&limit=20")
+func pokemap(cfg *config) error {
+	url := "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
+	if cfg.Next != nil {
+		url = *cfg.Next
+	}
+	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -90,13 +91,20 @@ func pokemap() error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var locations []Location
+	locations := Locations{}
 
 	err = json.Unmarshal(body, &locations)
-	fmt.Printf("%s", body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cfg.Next = locations.Next
+	cfg.Previous = locations.Previous
+	for _, loc := range locations.Results {
+		fmt.Println(loc.Name)
+	}
 	return nil
 }
 
-func mapb() error {
+func mapb(cfg *config) error {
 	return nil
 }
