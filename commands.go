@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"net/http"
 	"io"
@@ -79,32 +78,41 @@ func pokemap(cfg *config) error {
 	if cfg.Next != nil {
 		url = *cfg.Next
 	}
+	return mapHelper(url, cfg)
+}
+
+func mapb(cfg *config) error {
+	if cfg.Previous == nil {
+		fmt.Println("you're on the first page")
+		return nil
+	}
+	url := *cfg.Previous
+	return mapHelper(url, cfg)
+}
+
+func mapHelper(url string, cfg *config) error {
 	res, err := http.Get(url)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	body, err := io.ReadAll(res.Body)
 	defer res.Body.Close()
 	if res.StatusCode > 299 {
-		log.Fatalf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
+		return fmt.Errorf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
 	}
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	locations := Locations{}
 
 	err = json.Unmarshal(body, &locations)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 	cfg.Next = locations.Next
 	cfg.Previous = locations.Previous
 	for _, loc := range locations.Results {
 		fmt.Println(loc.Name)
 	}
-	return nil
-}
-
-func mapb(cfg *config) error {
 	return nil
 }
