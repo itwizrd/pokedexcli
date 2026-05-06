@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/itwizrd/pokedexcli/internal/pokeapi"
+	"github.com/itwizrd/pokedexcli/internal/pokecache"
 )
 
 type cliCommand struct {

@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"net/http"
 	"io"
+
+	"github.com/itwizrd/pokedexcli/internal/pokeapi"
 )
 
 func mapf(cfg *config) error {
-	url := "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
+	url := baseURL + "/location-area"
 	if cfg.Next != nil {
 		url = *cfg.Next
 	}
