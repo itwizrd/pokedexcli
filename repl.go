@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/itwizrd/pokedexcli/internal/pokeapi"
-	"github.com/itwizrd/pokedexcli/internal/pokecache"
+	//"github.com/itwizrd/pokedexcli/internal/pokecache"
 )
 
 type cliCommand struct {
@@ -17,16 +17,16 @@ type cliCommand struct {
 }
 
 type config struct {
-	Next		*string
-	Previous	*string
+	pokeapiClient 	pokeapi.Client
+	nextURL			*string
+	prevURL			*string
 }
 
 
 func cleanInput(text string) []string {
 	return strings.Fields(strings.ToLower(text))
 }
-func repl() {
-	cfg := &config{}
+func repl(cfg *config) {
 	scanner := bufio.NewScanner(os.Stdin)
 	if err := scanner.Err(); err != nil {
 		fmt.Fprintln(os.Stderr, "reading standard input:", err)
