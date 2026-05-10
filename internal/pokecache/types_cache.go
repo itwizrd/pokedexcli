@@ -1,9 +1,9 @@
 package pokecache
 
-import(
+import (
 	"time"
 )
-type Locations struct
+
 type Cache struct {
 	map[string]cacheEntry
 	//sync.Mutex that projects map across goroutines
